@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#102a43">
+  <meta name="description" content="Monthly family financial summary covering loans, income and credit card rotation costs.">
+  <title>Monthly Family Financial Summary</title>
+  <style>
+    :root {
+      --navy: #102a43;
+      --blue: #176b87;
+      --ink: #243b53;
+      --muted: #627d98;
+      --line: #d9e2ec;
+      --paper: #ffffff;
+      --bg: #f0f4f8;
+      --soft: #f7fafc;
+      --red: #b42318;
+      --red-bg: #fff1f0;
+      --green: #087443;
+      --green-bg: #eafaf1;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      line-height: 1.5;
+    }
+    .page { width: min(920px, calc(100% - 28px)); margin: 28px auto 44px; }
+    header {
+      background: linear-gradient(135deg, #102a43, #176b87);
+      color: white;
+      padding: 30px 28px;
+      border-radius: 18px;
+      box-shadow: 0 10px 28px rgba(16,42,67,.14);
+    }
+    .eyebrow { margin: 0 0 7px; color: #c8e8f1; font-size: .76rem; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; }
+    h1 { margin: 0; font-size: clamp(1.55rem, 5vw, 2.2rem); line-height: 1.2; }
+    .subtitle { margin: 9px 0 0; color: #e6f3f7; font-size: .96rem; }
+    .section { margin-top: 22px; background: var(--paper); border: 1px solid var(--line); border-radius: 15px; overflow: hidden; box-shadow: 0 4px 14px rgba(16,42,67,.045); }
+    .section-head { padding: 17px 20px 12px; }
+    h2 { margin: 0; color: var(--navy); font-size: 1.08rem; }
+    .section-note { margin: 4px 0 0; color: var(--muted); font-size: .84rem; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: .94rem; }
+    th, td { padding: 11px 20px; border-top: 1px solid #edf2f7; text-align: left; }
+    th { color: var(--muted); background: var(--soft); font-size: .76rem; font-weight: 700; letter-spacing: .045em; text-transform: uppercase; }
+    td.amount, th.amount { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+    tr.total td { background: #f7fafc; color: var(--navy); font-weight: 750; border-top: 1px solid var(--line); }
+    .summary-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 4px 20px 20px; }
+    .metric { padding: 15px 16px; background: var(--soft); border: 1px solid var(--line); border-radius: 12px; }
+    .metric .label { display: block; color: var(--muted); font-size: .79rem; font-weight: 650; }
+    .metric .value { display: block; margin-top: 4px; color: var(--navy); font-size: clamp(1.25rem, 4vw, 1.65rem); font-weight: 800; font-variant-numeric: tabular-nums; }
+    .metric.deficit { background: var(--red-bg); border-color: #fecdca; }
+    .metric.deficit .value { color: var(--red); }
+    .metric.income { background: var(--green-bg); border-color: #abefc6; }
+    .metric.income .value { color: var(--green); }
+    .final-row { margin: 0 20px 20px; padding: 17px 18px; border-radius: 12px; background: var(--red-bg); border: 1px solid #fecdca; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .final-row strong { color: #7a271a; }
+    .final-row .big { color: var(--red); font-size: 1.55rem; font-weight: 850; white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .note { margin: 0; padding: 0 20px 19px; color: var(--muted); font-size: .83rem; }
+    footer { text-align: center; color: var(--muted); font-size: .78rem; padding: 20px 8px 0; }
+    .actions { display: flex; justify-content: flex-end; margin: 0 0 14px; }
+    .print-btn { border: 1px solid var(--line); background: white; color: var(--navy); border-radius: 9px; padding: 9px 13px; font-weight: 650; cursor: pointer; }
+    .print-btn:hover { background: #eaf2f8; }
+    @media (max-width: 560px) {
+      .page { width: min(100% - 18px, 920px); margin: 10px auto 28px; }
+      header { padding: 24px 20px; border-radius: 14px; }
+      .section { margin-top: 14px; border-radius: 12px; }
+      .section-head { padding: 15px 15px 10px; }
+      th, td { padding: 10px 15px; }
+      .summary-grid { padding: 4px 15px 15px; gap: 9px; }
+      .metric { padding: 12px; }
+      .final-row { margin: 0 15px 15px; padding: 14px; }
+      .final-row .big { font-size: 1.3rem; }
+      .note { padding: 0 15px 15px; }
+    }
+    @media print {
+      body { background: white; }
+      .page { width: 100%; margin: 0; }
+      header, .section { box-shadow: none; break-inside: avoid; }
+      .actions { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="actions"><button class="print-btn" onclick="window.print()">Print / Save as PDF</button></div>
+    <header>
+      <p class="eyebrow">Family Finance</p>
+      <h1>Monthly Financial Summary</h1>
+      <p class="subtitle">Monthly loan commitments, income received and credit card rotation costs</p>
+    </header>
+
+    <section class="section">
+      <div class="section-head"><h2>1. Monthly Loan Commitments</h2></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Name / Loan Type</th><th class="amount">Amount (₹)</th></tr></thead>
+          <tbody>
+            <tr><td>Krishnamoorhy</td><td class="amount">30,000</td></tr>
+            <tr><td>Suruthi</td><td class="amount">10,000</td></tr>
+            <tr><td>Jegan – HDFC</td><td class="amount">13,897</td></tr>
+            <tr><td>Jegan – HDFC Jumbo</td><td class="amount">9,780</td></tr>
+            <tr><td>Jegan – Cred</td><td class="amount">10,544</td></tr>
+            <tr><td>Jegan – Zype</td><td class="amount">4,000</td></tr>
+            <tr><td>Mathan – Fibe</td><td class="amount">6,000</td></tr>
+            <tr><td>Mathan – New Loan</td><td class="amount">5,700</td></tr>
+            <tr class="total"><td>Total Loan</td><td class="amount">₹89,921</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><h2>2. Interest-Only Loan Commitments</h2></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Name</th><th class="amount">Amount (₹)</th></tr></thead>
+          <tbody>
+            <tr><td>Sannasi Wife</td><td class="amount">9,000</td></tr>
+            <tr><td>2 Lady</td><td class="amount">2,000</td></tr>
+            <tr><td>Sannasi</td><td class="amount">2,500</td></tr>
+            <tr><td>Pichai</td><td class="amount">4,000</td></tr>
+            <tr><td>Velu</td><td class="amount">6,000</td></tr>
+            <tr><td>Paraman</td><td class="amount">1,000</td></tr>
+            <tr><td>Amudha</td><td class="amount">1,000</td></tr>
+            <tr><td>Paapaathi</td><td class="amount">1,000</td></tr>
+            <tr class="total"><td>Total Interest-Only Loan</td><td class="amount">₹26,500</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><h2>3. Salary Balance / Income Received</h2></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Name</th><th class="amount">Amount (₹)</th></tr></thead>
+          <tbody>
+            <tr><td>Mathan</td><td class="amount">35,000</td></tr>
+            <tr><td>Jegan</td><td class="amount">70,000</td></tr>
+            <tr><td>Annakodi</td><td class="amount">7,000</td></tr>
+            <tr class="total"><td>Total Income Received</td><td class="amount">₹1,12,000</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>4. Credit Card Rotation / EMI</h2>
+        <p class="section-note">Rotation amount and associated monthly loss</p>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Name</th><th>Bank</th><th class="amount">Payment Amount (₹)</th><th class="amount">Loss (₹)</th></tr></thead>
+          <tbody>
+            <tr><td>Mathan K</td><td>IndusInd</td><td class="amount">30,000</td><td class="amount">600</td></tr>
+            <tr><td>Mathan K</td><td>HDFC</td><td class="amount">67,000</td><td class="amount">3,000</td></tr>
+            <tr><td>Suruthi</td><td>ICICI</td><td class="amount">48,000</td><td class="amount">960</td></tr>
+            <tr><td>Jegan K</td><td>HDFC</td><td class="amount">1,50,000</td><td class="amount">3,000</td></tr>
+            <tr><td>Jegan K</td><td>ICICI</td><td class="amount">1,00,000</td><td class="amount">2,000</td></tr>
+            <tr class="total"><td colspan="2">Total</td><td class="amount">₹3,95,000</td><td class="amount">₹9,560</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>5. Final Monthly Financial Summary</h2>
+        <p class="section-note">Credit card rotation principal is shown separately; only its loss is included in monthly outflow.</p>
+      </div>
+      <div class="summary-grid">
+        <div class="metric"><span class="label">Total Monthly Loan</span><span class="value">₹89,921</span></div>
+        <div class="metric"><span class="label">Interest-Only Loan</span><span class="value">₹26,500</span></div>
+        <div class="metric"><span class="label">Total Loan Commitments</span><span class="value">₹1,16,421</span></div>
+        <div class="metric"><span class="label">Credit Card Rotation Loss</span><span class="value">₹9,560</span></div>
+        <div class="metric"><span class="label">Total Income Received</span><span class="value">₹1,12,000</span></div>
+        <div class="metric"><span class="label">Total Monthly Outflow / Loss</span><span class="value">₹1,25,981</span></div>
+      </div>
+      <div class="final-row">
+        <strong>Final Monthly Deficit</strong>
+        <span class="big">₹13,981</span>
+      </div>
+      <p class="note">Calculation: ₹89,921 + ₹26,500 + ₹9,560 = ₹1,25,981. Income ₹1,12,000 − outflow ₹1,25,981 = deficit ₹13,981.</p>
+    </section>
+
+    <footer>Prepared for family financial review · Amounts in Indian Rupees (₹)</footer>
+  </main>
+</body>
+</html>
